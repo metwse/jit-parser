@@ -20,6 +20,12 @@ struct armthumb_as {
 };
 
 
+/* Initialize static variables for the ARM thumb assembler. */
+void armthumb_static_xinit(void);
+
+/* Free the resources owned by static variables of the ARM thumb assembler. */
+void armthumb_static_destroy(void);
+
 /* Initialize a new assembler. */
 void armthumb_as_xinit(struct armthumb_as *);
 
