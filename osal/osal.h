@@ -17,7 +17,12 @@ enum execmem_mode {
 /* Executable memory. */
 struct execmem {
 	enum execmem_mode mode;
-	void *mem;
+
+	union {
+		void *mem;
+		void (*execmem)(void);
+	};
+
 	size_t size;
 };
 

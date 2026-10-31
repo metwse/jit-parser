@@ -31,6 +31,8 @@ int execmem_alloc(struct execmem *out, size_t size)
 
 void execmem_free(struct execmem *e)
 {
+	execmem_set_mode(e, EXECMEM_RW);
+
 	munmap(e, e->size);
 }
 
@@ -52,8 +54,13 @@ int execmem_realloc(struct execmem *e, size_t size)
 
 void execmem_set_mode(struct execmem *e, enum execmem_mode mode)
 {
+	if (e->mode == mode)
+		return;
+
+	e->mem = (char *) e->mem + (mode == EXECMEM_RW ? -1 : 1);
+
 	assert2(mmap(e->mem, e->size,
 		mode == EXECMEM_RW ? PROT_READ | PROT_WRITE : PROT_EXEC,
-		MAP_ANON, -1, 0) != (void *) -1,
-		"could change memory mode");
+		MAP_PRIVATE | MAP_ANON, -1, 0) != (void *) -1,
+		"could change the memory mode");
 }
