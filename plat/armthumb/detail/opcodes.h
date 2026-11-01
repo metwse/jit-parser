@@ -23,7 +23,7 @@ struct armthumb_as;  /* defined in ../as.h */
 
 
 enum inst_opcode {
-	OP_ADCS, OP_ADDS, OP_ADD, OP_ADR, OP_ANDS, OP_ASRS, OP_B,
+	OP_ADCS, OP_ADDS, OP_ADD, OP_ANDS, OP_ASRS, OP_B,
 	OP_BICS, OP_BKPT, OP_BL, OP_BLX, OP_BX, OP_CMN, OP_CMP,
 	OP_EORS, OP_LDM, OP_LDR, OP_LDRB, OP_LDRH, OP_LDRSB, OP_LDRSH,
 	OP_LSLS, OP_LSRS, OP_MOVS, OP_MULS, OP_MVNS, OP_NEG, OP_NOP,
@@ -127,7 +127,7 @@ struct inst_arg_tk {
 
 
 static const char *const mnemonics[INST_COUNT] = {
-	"adcs", "adds", "add", "adr", "ands", "asrs", "b",
+	"adcs", "adds", "add", "ands", "asrs", "b",
 	"bics", "bkpt", "bl", "blx", "bx", "cmn", "cmp",
 	"eors", "ldm", "ldr", "ldrb", "ldrh", "ldrsb", "ldrsh",
 	"lsls", "lsrs", "movs", "muls", "mvns", "neg", "nop",
@@ -181,14 +181,12 @@ inst_params[INST_COUNT][MAX_ALTERNATIVE_COUNT + 1][MAX_PARAM_COUNT + 1] = {
 
 	[OP_ADD] = {	{ PARAM_NOT_SP_REG, PARAM_ANY_REG },
 			/* SP plus immediate */
-			{ PARAM_ANY_REG, PARAM_SP, PARAM_IMM8_00 },
-			{ PARAM_SP, PARAM_SP, PARAM_IMM7_00 },
+			{ PARAM_LOW_REG, PARAM_SP, PARAM_IMM8_00 },
+			{ PARAM_SP, PARAM_IMM7_00 },
 			/* SP plus register */
 			{ PARAM_ANY_REG, PARAM_SP },
 			{ PARAM_SP, PARAM_ANY_REG },
 			{ PARAM_LOW_REG, PARAM_PC, PARAM_IMM8_00 } },
-
-	[OP_ADR] = {	{ PARAM_LOW_REG, PARAM_IMM8_00_LABEL } },
 
 			/* register */
 	[OP_ANDS] = {	{ PARAM_LOW_REG, PARAM_LOW_REG } },
@@ -198,15 +196,15 @@ inst_params[INST_COUNT][MAX_ALTERNATIVE_COUNT + 1][MAX_PARAM_COUNT + 1] = {
 			/* register */
 			{ PARAM_LOW_REG, PARAM_LOW_REG } },
 
-	[OP_B] = {	{ PARAM_COND, PARAM_IMM8_0_LABEL },
-			{ PARAM_IMM11_0_LABEL } },
+	[OP_B] = {	{ PARAM_COND, PARAM_IMM8_0_LABEL },			/* TODO: make this label signed (-256-254) */
+			{ PARAM_IMM11_0_LABEL } },				/* TODO: make this label signed (-2048-2046) */
 
 			/* register */
 	[OP_BICS] = {	{ PARAM_LOW_REG, PARAM_LOW_REG } },
 
 	[OP_BKPT] = {	{ PARAM_IMM8 } },
 
-	[OP_BL] = {	{ PARAM_IMM24_0_LABEL } },
+	[OP_BL] = {	{ PARAM_IMM24_0_LABEL } },				/* TODO: make this label signed (-16777216-16777214) */
 
 			/* register */
 	[OP_BLX] = {	{ PARAM_NOT_PC_REG } },
