@@ -100,17 +100,17 @@ struct inst {
 /* Argument token.  */
 struct inst_arg_tk {
 	enum inst_arg_tk_ty {
-		INST_ARG_TK_REG,  /* argument is register */
-		INST_ARG_TK_REG_VA_STR,  /* read register string from vaargs */
-		INST_ARG_TK_REG_VA_NUM,  /* read register number from vaargs */
-		INST_ARG_TK_REG_LS,  /* the argument is register list */
-		INST_ARG_TK_REG_LS_VA,  /* read register list from vaargs */
-		INST_ARG_TK_IMM,  /* the argument is imm */
-		INST_ARG_TK_IMM_VA,  /* read imm from vaargs */
-		INST_ARG_TK_COND,  /* the argument is execution cond flag */
-		INST_ARG_TK_EXCL,  /* used for parsing */
-		INST_ARG_TK_BRACE,  /* used for parsing */
-		INST_ARG_TK_END,
+		ARG_TK_REG,  /* argument is register */
+		ARG_TK_REG_VA_STR,  /* read register string from vaargs */
+		ARG_TK_REG_VA_NUM,  /* read register number from vaargs */
+		ARG_TK_REG_LS,  /* the argument is register list */
+		ARG_TK_REG_LS_VA,  /* read register list from vaargs */
+		ARG_TK_IMM,  /* the argument is imm */
+		ARG_TK_IMM_VA,  /* read imm from vaargs */
+		ARG_TK_COND,  /* the argument is execution cond flag */
+		ARG_TK_EXCL,  /* used for parsing */
+		ARG_TK_BRACE,  /* used for parsing */
+		ARG_TK_END,
 	} ty;
 
 	union inst_arg_tk_seminfo {
@@ -337,6 +337,9 @@ struct inst_arg_tk armthumb_consume_arg_tk(const char **inst, bool first);
 
 /* Extract one register argument from instruction string. */
 uint32_t armthumb_consume_arg_reg_tk(const char **inst);
+
+/* Parse and validate the token list. */
+struct inst armthumb_validate(enum inst_opcode, const struct inst_arg_tk *);
 
 
 #endif

@@ -1,6 +1,6 @@
 #ifdef ARMTHUMB
 
-#include "../plat/armthumb/encoding.h"
+#include "../plat/armthumb/detail/encoding.h"
 
 
 int main(void)

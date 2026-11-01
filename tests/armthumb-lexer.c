@@ -22,41 +22,37 @@ static void test_lex(const char *inst,
 			"parsed token type do not match with testsuite");
 
 		switch (pit[i].ty) {
-		case INST_ARG_TK_REG:
+		case ARG_TK_REG:
 			assert2(pit[i].seminfo.parsed.reg ==
 				it[i].seminfo.parsed.reg,);
 			break;
-		case INST_ARG_TK_REG_VA_STR:
-			break;
-		case INST_ARG_TK_REG_VA_NUM:
-			break;
 
-		case INST_ARG_TK_REG_LS:
+		case ARG_TK_REG_LS:
 			assert2(pit[i].seminfo.parsed.reg_ls.reg_ls ==
 				it[i].seminfo.parsed.reg_ls.reg_ls,);
 			break;
-		case INST_ARG_TK_REG_LS_VA:
-			break;
 
-		case INST_ARG_TK_IMM:
+		case ARG_TK_IMM:
 			assert2(pit[i].seminfo.parsed.imm ==
 				it[i].seminfo.parsed.imm,);
 			break;
-		case INST_ARG_TK_IMM_VA:
-			break;
 
-		case INST_ARG_TK_COND:
+		case ARG_TK_COND:
 			assert2(pit[i].seminfo.parsed.cond_suffix ==
 				it[i].seminfo.parsed.cond_suffix,);
 			break;
 
-		case INST_ARG_TK_EXCL:
-		case INST_ARG_TK_BRACE:
-		case INST_ARG_TK_END:
+		case ARG_TK_REG_VA_STR:
+		case ARG_TK_REG_VA_NUM:
+		case ARG_TK_REG_LS_VA:
+		case ARG_TK_IMM_VA:
+		case ARG_TK_EXCL:
+		case ARG_TK_BRACE:
+		case ARG_TK_END:
 			break;
 		}
 
-		if (pit[i].ty == INST_ARG_TK_END)
+		if (pit[i].ty == ARG_TK_END)
 			break;
 	}
 }
@@ -68,40 +64,57 @@ int main(void)
 	test_lex("adds r1, r3",
 		 OP_ADDS,
 		 (struct inst_arg_tk []) {
-			 { .ty = INST_ARG_TK_REG, .seminfo.parsed.reg = 1 },
-			 { .ty = INST_ARG_TK_REG, .seminfo.parsed.reg = 3 },
-			 { .ty = INST_ARG_TK_END, },
+			 { .ty = ARG_TK_REG, .seminfo.parsed.reg = 1 },
+			 { .ty = ARG_TK_REG, .seminfo.parsed.reg = 3 },
+			 { .ty = ARG_TK_END, },
 		 });
 
 	test_lex("push { r2, r3, r4, lr }",
 		 OP_PUSH,
 		 (struct inst_arg_tk []) {
-			 { .ty = INST_ARG_TK_REG_LS, .seminfo.parsed.reg_ls.reg_ls = 540 },
-			 { .ty = INST_ARG_TK_END, },
+			 { .ty = ARG_TK_REG_LS, .seminfo.parsed.reg_ls.reg_ls = 540 },
+			 { .ty = ARG_TK_END, },
 		 });
 	test_lex("ldr r1, [r3, #12]",
 		 OP_LDR,
 		 (struct inst_arg_tk []) {
-			 { .ty = INST_ARG_TK_REG, .seminfo.parsed.reg = 1 },
-			 { .ty = INST_ARG_TK_BRACE, },
-			 { .ty = INST_ARG_TK_REG, .seminfo.parsed.reg = 3 },
-			 { .ty = INST_ARG_TK_IMM, .seminfo.parsed.imm = 12 },
-			 { .ty = INST_ARG_TK_END, },
+			 { .ty = ARG_TK_REG, .seminfo.parsed.reg = 1 },
+			 { .ty = ARG_TK_BRACE, },
+			 { .ty = ARG_TK_REG, .seminfo.parsed.reg = 3 },
+			 { .ty = ARG_TK_IMM, .seminfo.parsed.imm = 12 },
+			 { .ty = ARG_TK_END, },
 		 });
 	test_lex("ldm r7!, { r1, r3, r5 }",
 		 OP_LDM,
 		 (struct inst_arg_tk []) {
-			 { .ty = INST_ARG_TK_REG, .seminfo.parsed.reg = 7 },
-			 { .ty = INST_ARG_TK_EXCL, },
-			 { .ty = INST_ARG_TK_REG_LS, .seminfo.parsed.reg_ls.reg_ls = 42 },
-			 { .ty = INST_ARG_TK_END, },
+			 { .ty = ARG_TK_REG, .seminfo.parsed.reg = 7 },
+			 { .ty = ARG_TK_EXCL, },
+			 { .ty = ARG_TK_REG_LS, .seminfo.parsed.reg_ls.reg_ls = 42 },
+			 { .ty = ARG_TK_END, },
 		 });
 	test_lex("bne #10",
 		 OP_B,
 		 (struct inst_arg_tk []) {
-			 { .ty = INST_ARG_TK_COND, .seminfo.parsed.cond_suffix = COND_NE },
-			 { .ty = INST_ARG_TK_IMM, .seminfo.parsed.imm = 10 },
-			 { .ty = INST_ARG_TK_END, },
+			 { .ty = ARG_TK_COND, .seminfo.parsed.cond_suffix = COND_NE },
+			 { .ty = ARG_TK_IMM, .seminfo.parsed.imm = 10 },
+			 { .ty = ARG_TK_END, },
+		 });
+	test_lex("str %r, [%R, %i]",
+		 OP_STR,
+		 (struct inst_arg_tk []) {
+			 { .ty = ARG_TK_REG_VA_NUM, },
+			 { .ty = ARG_TK_BRACE, },
+			 { .ty = ARG_TK_REG_VA_STR, },
+			 { .ty = ARG_TK_IMM_VA, },
+			 { .ty = ARG_TK_END, },
+		 });
+	test_lex("stm %r!, %l",
+		 OP_STM,
+		 (struct inst_arg_tk []) {
+			 { .ty = ARG_TK_REG_VA_NUM, },
+			 { .ty = ARG_TK_EXCL, },
+			 { .ty = ARG_TK_REG_LS_VA, },
+			 { .ty = ARG_TK_END, },
 		 });
 
 	armthumb_static_destroy();

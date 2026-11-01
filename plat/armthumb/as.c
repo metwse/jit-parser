@@ -30,20 +30,51 @@ struct execmem armthumb_as_finalize(struct armthumb_as *as)
 }
 
 
-void armthumb_as_xfeed(struct armthumb_as *as, const char *inst, ...)
+void armthumb_as_xfeed(struct armthumb_as *as, const char *inst_str, ...)
 {
-	va_list args;
-	va_start(args, inst);
+	va_list ap;
+	va_start(ap, inst_str);
 
-	enum inst_opcode op = armthumb_consume_mnemonic(&inst);
-	struct inst_arg_tk inst_tokens[MAX_PARAM_COUNT + 1];
+	enum inst_opcode op = armthumb_consume_mnemonic(&inst_str);
+	struct inst_arg_tk arg_tks[MAX_PARAM_COUNT + 1];
 
 	for (size_t i = 0; i < MAX_PARAM_COUNT + 1; i++) {
-		inst_tokens[i] = armthumb_consume_arg_tk(&inst, i == 0);
+		struct inst_arg_tk arg_tk =
+			armthumb_consume_arg_tk(&inst_str, i == 0);
 
-		if (inst_tokens[i].ty == INST_ARG_TK_END)
+		switch (arg_tk.ty) {
+		case ARG_TK_REG_VA_STR:
+			arg_tk.ty = ARG_TK_REG;
+			arg_tk.seminfo.parsed.reg =
+				armthumb_consume_arg_reg_tk(
+					&(const char *) { va_arg(ap, char *) });
+			break;
+
+		case ARG_TK_REG_VA_NUM:
+			arg_tk.ty = ARG_TK_REG;
+			arg_tk.seminfo.parsed.reg = va_arg(ap, int);
+			break;
+
+		case ARG_TK_REG_LS_VA:
+			arg_tk.ty = ARG_TK_REG_LS;
+			arg_tk.seminfo.parsed.reg_ls.reg_ls = va_arg(ap, int);
+			break;
+
+		case ARG_TK_IMM_VA:
+			arg_tk.ty = ARG_TK_IMM;
+			arg_tk.seminfo.parsed.imm = va_arg(ap, int);
+			break;
+
+		default:
+			break;
+		}
+
+		arg_tks[i] = arg_tk;
+		if (arg_tks[i].ty == ARG_TK_END)
 			break;
 	}
 
-	va_end(args);
+	struct inst inst = armthumb_validate(op, arg_tks);
+
+	va_end(ap);
 }

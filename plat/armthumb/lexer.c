@@ -102,7 +102,7 @@ struct inst_arg_tk armthumb_consume_arg_tk(const char **inst, bool first)
 	const char *start = *inst;
 
 	if ((*inst)[0] == '\0')
-		return (struct inst_arg_tk) { .ty = INST_ARG_TK_END };
+		return (struct inst_arg_tk) { .ty = ARG_TK_END };
 
 	/* cond suffix */
 	if (isalpha(start[0]) && first) {
@@ -112,7 +112,7 @@ struct inst_arg_tk armthumb_consume_arg_tk(const char **inst, bool first)
 				    start[1] == mnemonic_cond_suffix[i][1]) {
 					*inst += 2;
 					return (struct inst_arg_tk) {
-						.ty = INST_ARG_TK_COND,
+						.ty = ARG_TK_COND,
 						.seminfo.parsed.cond_suffix = i
 					};
 				}
@@ -128,7 +128,7 @@ struct inst_arg_tk armthumb_consume_arg_tk(const char **inst, bool first)
 		(*inst)++;
 		uint32_t imm = strtol(*inst, (char **) inst, 0);
 
-		return (struct inst_arg_tk) { .ty = INST_ARG_TK_IMM, .seminfo.parsed.imm = imm };
+		return (struct inst_arg_tk) { .ty = ARG_TK_IMM, .seminfo.parsed.imm = imm };
 	}
 	case 'r':
 	case 's':
@@ -138,7 +138,7 @@ struct inst_arg_tk armthumb_consume_arg_tk(const char **inst, bool first)
 
 		if (reg < 16) {
 			return (struct inst_arg_tk) {
-				.ty = INST_ARG_TK_REG,
+				.ty = ARG_TK_REG,
 				.seminfo.parsed.reg = reg
 			};
 		} else {
@@ -176,22 +176,39 @@ struct inst_arg_tk armthumb_consume_arg_tk(const char **inst, bool first)
 		(*inst)++;  /* consume the } */
 
 		return (struct inst_arg_tk) {
-			.ty = INST_ARG_TK_REG_LS,
+			.ty = ARG_TK_REG_LS,
 			.seminfo.parsed.reg_ls = reg_ls
 		};
 	}
 
+	case '%':  /* vaarg placeholders */
+		*inst += 2;  /* collect %x */
+		switch ((*inst)[-1]) {
+		case 'r':
+			return (struct inst_arg_tk) { .ty = ARG_TK_REG_VA_NUM, };
+		case 'R':
+			return (struct inst_arg_tk) { .ty = ARG_TK_REG_VA_STR, };
+		case 'l':
+			return (struct inst_arg_tk) { .ty = ARG_TK_REG_LS_VA, };
+		case 'i':
+			return (struct inst_arg_tk) { .ty = ARG_TK_IMM_VA, };
+		default:
+			fatal("invalid vaarg placeholders %c", (*inst)[-1]);
+			break;
+		}
+		break;
+
 	case '[':  /* collect brace */
 		(*inst)++;
-		return (struct inst_arg_tk) { .ty = INST_ARG_TK_BRACE };
+		return (struct inst_arg_tk) { .ty = ARG_TK_BRACE };
 	case '!':  /* excl */
 		(*inst)++;
-		return (struct inst_arg_tk) { .ty = INST_ARG_TK_EXCL };
+		return (struct inst_arg_tk) { .ty = ARG_TK_EXCL };
 	case '\0':  /* end */
-		return (struct inst_arg_tk) { .ty = INST_ARG_TK_END };
+		return (struct inst_arg_tk) { .ty = ARG_TK_END };
 
 	default:
-		fatal("invalid character %c", start[0]);
+		fatal("invalid character %c", (*inst)[0]);
 		break;
 	}
 
