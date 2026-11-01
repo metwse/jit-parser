@@ -1,4 +1,4 @@
-#include "detail/encoding.h"
+#include "detail/opcodes.h"
 
 #include "../../include/common.h"
 
@@ -108,7 +108,7 @@ static bool validate_imm(const struct inst_arg_tk *arg_in,
 {
 	uint32_t imm = arg_in->seminfo.parsed.imm;
 
-	const static uint32_t ranges[] = {
+	static const uint32_t ranges[] = {
 		[PARAM_IMM3] = 3,
 		[PARAM_IMM5] = 5,
 		[PARAM_IMM5_00] = 5,
@@ -122,7 +122,7 @@ static bool validate_imm(const struct inst_arg_tk *arg_in,
 		[PARAM_IMM24_0_LABEL] = 24,
 	};
 
-	const static uint32_t pad[] = {
+	static const uint32_t pad[] = {
 		[PARAM_IMM5_00] = 2,
 		[PARAM_IMM7_00] = 2,
 		[PARAM_IMM8_0] = 1,
@@ -243,7 +243,7 @@ struct inst armthumb_validate(enum inst_opcode op,
 				return res;
 
 			if (!validate_arg(&args[i],
-					  &res.data[i],
+					  &res.args[i],
 					  cur_param,
 					  &errors[res.alt_idx])) {
 				if (i > max_match_i) {

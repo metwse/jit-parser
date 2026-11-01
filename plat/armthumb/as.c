@@ -1,5 +1,5 @@
 #include "as.h"
-#include "detail/encoding.h"
+#include "detail/opcodes.h"
 
 #include "../../include/common.h"
 #include "../../osal/osal.h"
@@ -36,6 +36,9 @@ void armthumb_as_xfeed(struct armthumb_as *as, const char *inst_str, ...)
 	va_start(ap, inst_str);
 
 	enum inst_opcode op = armthumb_consume_mnemonic(&inst_str);
+
+	assert2((int) op != -1, "invalid mnemonic");
+
 	struct inst_arg_tk arg_tks[MAX_PARAM_COUNT + 1];
 
 	for (size_t i = 0; i < MAX_PARAM_COUNT + 1; i++) {
@@ -75,6 +78,8 @@ void armthumb_as_xfeed(struct armthumb_as *as, const char *inst_str, ...)
 	}
 
 	struct inst inst = armthumb_validate(op, arg_tks);
+
+	armthumb_emit(as, inst);
 
 	va_end(ap);
 }

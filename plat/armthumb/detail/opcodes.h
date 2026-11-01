@@ -1,11 +1,13 @@
 /* OP encoding. For internal use only. */
 
-#ifndef ARMTHUMB_ENCODING_H
-#define ARMTHUMB_ENCODING_H
+#ifndef ARMTHUMB_OPCODES_H
+#define ARMTHUMB_OPCODES_H
 
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+
+struct armthumb_as;  /* defined in ../as.h */
 
 
 #define MAX_PARAM_COUNT 4
@@ -21,7 +23,7 @@
 
 
 enum inst_opcode {
-	OP_ACDS, OP_ADDS, OP_ADD, OP_ADR, OP_ANDS, OP_ASRS, OP_B,
+	OP_ADCS, OP_ADDS, OP_ADD, OP_ADR, OP_ANDS, OP_ASRS, OP_B,
 	OP_BICS, OP_BKPT, OP_BL, OP_BLX, OP_BX, OP_CMN, OP_CMP,
 	OP_EORS, OP_LDM, OP_LDR, OP_LDRB, OP_LDRH, OP_LDRSB, OP_LDRSH,
 	OP_LSLS, OP_LSRS, OP_MOVS, OP_MULS, OP_MVNS, OP_NEG, OP_NOP,
@@ -94,7 +96,7 @@ struct inst {
 		uint32_t imm;
 
 		enum inst_cond cond_suffix;
-	} data[MAX_PARAM_COUNT];
+	} args[MAX_PARAM_COUNT];
 };
 
 /* Argument token.  */
@@ -125,7 +127,7 @@ struct inst_arg_tk {
 
 
 static const char *const mnemonics[INST_COUNT] = {
-	"acds", "adds", "add", "adr", "ands", "asrs", "b",
+	"adcs", "adds", "add", "adr", "ands", "asrs", "b",
 	"bics", "bkpt", "bl", "blx", "bx", "cmn", "cmp",
 	"eors", "ldm", "ldr", "ldrb", "ldrh", "ldrsb", "ldrsh",
 	"lsls", "lsrs", "movs", "muls", "mvns", "neg", "nop",
@@ -169,7 +171,7 @@ static const char *const param_names[] = {
 static const enum inst_param
 inst_params[INST_COUNT][MAX_ALTERNATIVE_COUNT + 1][MAX_PARAM_COUNT + 1] = {
 			/* register */
-	[OP_ACDS] = {	{ PARAM_LOW_REG, PARAM_LOW_REG } },
+	[OP_ADCS] = {	{ PARAM_LOW_REG, PARAM_LOW_REG } },
 
 			/* immediate */
 	[OP_ADDS] = {	{ PARAM_LOW_REG, PARAM_LOW_REG, PARAM_IMM3 } ,
@@ -340,6 +342,9 @@ uint32_t armthumb_consume_arg_reg_tk(const char **inst);
 
 /* Parse and validate the token list. */
 struct inst armthumb_validate(enum inst_opcode, const struct inst_arg_tk *);
+
+/* Emit instruction. */
+void armthumb_emit(struct armthumb_as *, struct inst);
 
 
 #endif

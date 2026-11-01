@@ -1,7 +1,7 @@
 /* The ARMv6 thumb (16 bit) instruction set assembler. */
 
-#ifndef ARMTHUMB_OPCODES_H
-#define ARMTHUMB_OPCODES_H
+#ifndef ARMTHUMB_AS_H
+#define ARMTHUMB_AS_H
 
 #include "../../osal/osal.h"
 

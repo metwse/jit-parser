@@ -3,7 +3,7 @@
 #include "../include/common.h"
 
 #include "../plat/armthumb/as.h"
-#include "../plat/armthumb/detail/encoding.h"
+#include "../plat/armthumb/detail/opcodes.h"
 
 
 static void test_lex(const char *inst,
