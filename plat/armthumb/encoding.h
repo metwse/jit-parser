@@ -73,7 +73,7 @@ struct inst {
 
 	union inst_arg_data {
 		enum inst_arg_data_reg {
-			ARG_REG_R0, ARG_REG_R1, ARG_REG_R2, ARG_REG_R3,
+			ARG_REG_R0 = 0, ARG_REG_R1, ARG_REG_R2, ARG_REG_R3,
 			ARG_REG_R4, ARG_REG_R5, ARG_REG_R6, ARG_REG_R7,
 			ARG_REG_R8, ARG_REG_R9, ARG_REG_R10, ARG_REG_R11,
 			ARG_REG_R12, ARG_REG_R13, ARG_REG_R14, ARG_REG_R15,
@@ -95,6 +95,32 @@ struct inst {
 
 		enum inst_cond cond_suffix;
 	} data[MAX_PARAM_COUNT];
+};
+
+/* Argument token.  */
+struct inst_arg_tk {
+	enum inst_arg_tk_ty {
+		INST_ARG_TK_REG,  /* argument is register */
+		INST_ARG_TK_REG_VA_STR,  /* read register string from vaargs */
+		INST_ARG_TK_REG_VA_NUM,  /* read register number from vaargs */
+		INST_ARG_TK_REG_LS,  /* the argument is register list */
+		INST_ARG_TK_REG_LS_VA,  /* read register list from vaargs */
+		INST_ARG_TK_IMM,  /* the argument is imm */
+		INST_ARG_TK_IMM_VA,  /* read imm from vaargs */
+		INST_ARG_TK_COND,  /* the argument is execution cond flag */
+		INST_ARG_TK_EXCL,  /* used for parsing */
+		INST_ARG_TK_BRACE,  /* used for parsing */
+		INST_ARG_TK_END,
+	} ty;
+
+	union inst_arg_tk_seminfo {
+		struct {
+			const char *argstr;
+			size_t argstr_len;
+		} argstr;
+
+		union inst_arg_data parsed;
+	} seminfo;
 };
 
 
@@ -298,7 +324,19 @@ inst_params[INST_COUNT][MAX_ALTERNATIVE_COUNT + 1][MAX_PARAM_COUNT + 1] = {
 };
 
 
+/* Prints assembler grammar. */
 void armthumb_dump_grammar(void);
+
+/* Extract opcode from the string, consuming its mnemonic. Returns -1 if
+ * the mnemonic is not valid.*/
+enum inst_opcode armthumb_consume_mnemonic(const char **inst);
+
+/* Extract one argument from instruction string.
+ * Checks condition suffix if first==true. */
+struct inst_arg_tk armthumb_consume_arg_tk(const char **inst, bool first);
+
+/* Extract one register argument from instruction string. */
+uint32_t armthumb_consume_arg_reg_tk(const char **inst);
 
 
 #endif
