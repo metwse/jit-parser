@@ -94,7 +94,7 @@ void armthumb_emit(struct armthumb_as *as, struct inst inst)
 			emit2(args[1].reg, 4);
 			emit3(b(010001001));
 			break;
-		case 5: /* TODO: label */
+		case 5:
 			emit2(args[1].imm, 8);
 			emit2(args[0].reg, 3);
 			emit3(b(10100));
@@ -206,6 +206,9 @@ void armthumb_emit(struct armthumb_as *as, struct inst inst)
 	case OP_CMN:
 		switch (alt_idx) {
 		case 0:
+			emit2(args[0].reg, 3);
+			emit2(args[1].reg, 3);
+			emit3(b(0100001011));
 			break;
 		}
 		break;
@@ -213,6 +216,20 @@ void armthumb_emit(struct armthumb_as *as, struct inst inst)
 	case OP_CMP:
 		switch (alt_idx) {
 		case 0:
+			emit2(args[1].imm, 8);
+			emit2(args[0].reg, 3);
+			emit3(b(00101));
+			break;
+		case 1:
+			emit2(args[0].reg, 3);
+			emit2(args[1].reg, 3);
+			emit3(b(0100001010));
+			break;
+		case 2:
+			emit2(args[0].reg, 3);
+			emit2(args[1].reg, 4);
+			emit2((args[0].reg & 0x8) ? 1 : 0, 1);
+			emit3(b(01000101));
 			break;
 		}
 		break;
@@ -220,20 +237,72 @@ void armthumb_emit(struct armthumb_as *as, struct inst inst)
 	case OP_EORS:
 		switch (alt_idx) {
 		case 0:
+			emit2(args[0].reg, 3);
+			emit2(args[1].reg, 3);
+			emit3(b(0100000001));
 			break;
 		}
 		break;
 
-	case OP_LDM:
+	case OP_LDM: {
+		uint32_t reg_ls = 0;
 		switch (alt_idx) {
 		case 0:
+			reg_ls = args[1].reg_ls.reg_ls;
+			reg_ls &= ~(1 << args[0].reg);
+			// fallthrough
+		case 1:
+			if (reg_ls == 0) {
+				reg_ls = args[2].reg_ls.reg_ls;
+				reg_ls |= 1 << args[0].reg;
+			}
+			emit2(reg_ls, 8);
+			emit2(args[0].reg, 3);
+			emit3(b(11001));
 			break;
 		}
 		break;
+	}
 
 	case OP_LDR:
 		switch (alt_idx) {
 		case 0:
+			emit2(args[0].reg, 3);
+			emit2(args[1].reg, 3);
+			emit2(0, 5);
+			emit3(b(01101));
+			break;
+		case 1:
+			emit2(args[0].reg, 3);
+			emit2(args[2].reg, 3);
+			emit2(args[3].imm >> 2, 5);
+			emit3(b(01101));
+			break;
+		case 2:
+			emit2(0, 8);
+			emit2(args[0].reg, 3);
+			emit3(b(10011));
+			break;
+		case 3:
+			emit2(args[3].imm >> 2, 8);
+			emit2(args[0].reg, 3);
+			emit3(b(10011));
+			break;
+		case 4:
+			emit2(args[1].imm >> 2, 8);
+			emit2(args[0].reg, 3);
+			emit3(b(01001));
+			break;
+		case 5:
+			emit2(args[3].imm >> 2, 8);
+			emit2(args[0].reg, 3);
+			emit3(b(01001));
+			break;
+		case 6:
+			emit2(args[0].reg, 3);
+			emit2(args[1].reg, 3);
+			emit2(args[2].reg, 3);
+			emit3(b(0101100));
 			break;
 		}
 		break;

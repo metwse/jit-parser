@@ -41,6 +41,28 @@ int main(void)
 
 	armthumb_as_xfeed(&as, "blx %r", 11);
 	armthumb_as_xfeed(&as, "bx %r", 10);
+	armthumb_as_xfeed(&as, "cmn r3, r5");
+
+	armthumb_as_xfeed(&as, "cmp r3, %i", 255);
+	armthumb_as_xfeed(&as, "cmp r2, r1");
+	armthumb_as_xfeed(&as, "cmp pc, sp");
+	armthumb_as_xfeed(&as, "cmp r1, sp");
+	armthumb_as_xfeed(&as, "cmp pc, r1");
+
+	armthumb_as_xfeed(&as, "eors r1, r4");
+
+	armthumb_as_xfeed(&as, "ldm r1!, { r4 }");
+	armthumb_as_xfeed(&as, "ldm r1, { r2, r4 }");
+	armthumb_as_xfeed(&as, "ldm r2!, { r4 }");
+	armthumb_as_xfeed(&as, "ldm r3, { r4, r5, r6 }");
+
+	armthumb_as_xfeed(&as, "ldr r1, r2");
+	armthumb_as_xfeed(&as, "ldr r1, [r2, #124]");
+	armthumb_as_xfeed(&as, "ldr r3, sp");
+	armthumb_as_xfeed(&as, "ldr r4, [sp, #1016]");
+	armthumb_as_xfeed(&as, "ldr r5, #1012");
+	armthumb_as_xfeed(&as, "ldr r6, [pc, #1008]");
+	armthumb_as_xfeed(&as, "ldr r7, [r1, r2]");
 
 	struct execmem e = armthumb_as_finalize(&as);
 	e.execmem();
