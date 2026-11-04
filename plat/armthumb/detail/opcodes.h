@@ -19,15 +19,15 @@ struct armthumb_as;  /* defined in ../as.h */
 #define is_reg_ls(param) \
 	((param) >= PARAM_LOW_REG_LS && (param) <= PARAM_PUSH_REG_LS)
 #define is_imm(param) \
-	((param) >= PARAM_IMM3 && (param) <= PARAM_IMM24_0_LABEL)
+	((param) >= PARAM_IMM0 && (param) <= PARAM_IMM24_0_LABEL)
 
 
 enum inst_opcode {
 	OP_ADCS, OP_ADDS, OP_ADD, OP_ANDS, OP_ASRS, OP_B,
 	OP_BICS, OP_BKPT, OP_BL, OP_BLX, OP_BX, OP_CMN, OP_CMP,
 	OP_EORS, OP_LDM, OP_LDR, OP_LDRB, OP_LDRH, OP_LDRSB, OP_LDRSH,
-	OP_LSLS, OP_LSRS, OP_MOVS, OP_MULS, OP_MVNS, OP_NEG, OP_NOP,
-	OP_ORRS, OP_POP, OP_PUSH, OP_RORS, OP_RSBS, OP_SBCS, OP_STM,
+	OP_LSLS, OP_LSRS, OP_MOV, OP_MOVS, OP_MULS, OP_MVNS, OP_NEGS, OP_NOP,
+	OP_ORRS, OP_POP, OP_PUSH, OP_RORS, OP_RSBS, OP_SBCS, OP_SEV, OP_STM,
 	OP_STR, OP_STRB, OP_STRH, OP_SUBS, OP_SUB, OP_TST, OP_UDF
 };
 
@@ -53,6 +53,7 @@ enum inst_param {
 	PARAM_POP_REG_LS,  /* { r0-r7, pc } */
 	PARAM_PUSH_REG_LS,  /* { r0-r7, lr } */
 
+	PARAM_IMM0,  /* constant 0 */
 	PARAM_IMM3,  /* 3-bit imm */
 	PARAM_IMM5, PARAM_IMM5_00,
 	PARAM_IMM7_00,
@@ -130,8 +131,8 @@ static const char *const mnemonics[INST_COUNT] = {
 	"adcs", "adds", "add", "ands", "asrs", "b",
 	"bics", "bkpt", "bl", "blx", "bx", "cmn", "cmp",
 	"eors", "ldm", "ldr", "ldrb", "ldrh", "ldrsb", "ldrsh",
-	"lsls", "lsrs", "movs", "muls", "mvns", "neg", "nop",
-	"orrs", "pop", "push", "rors", "rsbs", "sbcs", "stm",
+	"lsls", "lsrs", "mov", "movs", "muls", "mvns", "negs", "nop",
+	"orrs", "pop", "push", "rors", "rsbs", "sbcs", "sev", "stm",
 	"str", "strb", "strh", "subs", "sub", "tst", "udf"
 };
 
@@ -259,18 +260,18 @@ inst_params[INST_COUNT][MAX_ALTERNATIVE_COUNT + 1][MAX_PARAM_COUNT + 1] = {
 			/* register */
 			{ PARAM_LOW_REG, PARAM_LOW_REG } },
 
+	[OP_MOV] = {	{ PARAM_ANY_REG, PARAM_ANY_REG } },
 			/* immediate */
 	[OP_MOVS] = {	{ PARAM_LOW_REG, PARAM_IMM8 },
 			/* register */
-			{ PARAM_LOW_REG, PARAM_LOW_REG },
-			{ PARAM_ANY_REG, PARAM_ANY_REG } },
+			{ PARAM_LOW_REG, PARAM_LOW_REG } },
 
 	[OP_MULS] = {	{ PARAM_LOW_REG, PARAM_LOW_REG } },
 
 			/* register */
 	[OP_MVNS] = {	{ PARAM_LOW_REG, PARAM_LOW_REG } },
 
-	[OP_NEG] = {	{ PARAM_LOW_REG, PARAM_LOW_REG } },
+	[OP_NEGS] = {	{ PARAM_LOW_REG, PARAM_LOW_REG } },
 
 	[OP_NOP] = { 	{ PARAM_NOPARAM } },
 
@@ -284,8 +285,11 @@ inst_params[INST_COUNT][MAX_ALTERNATIVE_COUNT + 1][MAX_PARAM_COUNT + 1] = {
 	[OP_RORS] = {	{ PARAM_LOW_REG, PARAM_LOW_REG } },
 
 			/* register */
-	[OP_RSBS] = {	{ PARAM_LOW_REG, PARAM_LOW_REG } },
+	[OP_RSBS] = {	{ PARAM_LOW_REG, PARAM_LOW_REG },
+			{ PARAM_LOW_REG, PARAM_LOW_REG, PARAM_IMM0 } },
 	[OP_SBCS] = {	{ PARAM_LOW_REG, PARAM_LOW_REG } },
+
+	[OP_SEV] = { 	{ PARAM_NOPARAM } },
 
 			/* store */
 	[OP_STM] = {	{ PARAM_LOW_REG, PARAM_LOW_REG_LS },

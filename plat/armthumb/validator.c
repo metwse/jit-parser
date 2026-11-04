@@ -90,7 +90,7 @@ static bool validate_reg_ls(const struct inst_arg_tk *arg_in,
 		break;
 
 	case PARAM_PUSH_REG_LS:
-		if (reg_ls.lr) {
+		if (reg_ls.pc) {
 			*error = "cannoht have pc at this place";
 			return false;
 		}
@@ -109,6 +109,7 @@ static bool validate_imm(const struct inst_arg_tk *arg_in,
 	uint32_t imm = arg_in->seminfo.parsed.imm;
 
 	static const uint32_t ranges[] = {
+		[PARAM_IMM0] = 0,
 		[PARAM_IMM3] = 3,
 		[PARAM_IMM5] = 5,
 		[PARAM_IMM5_00] = 5,
@@ -123,6 +124,7 @@ static bool validate_imm(const struct inst_arg_tk *arg_in,
 	};
 
 	static const uint32_t pad[] = {
+		[PARAM_IMM0] = 0,
 		[PARAM_IMM5_00] = 2,
 		[PARAM_IMM7_00] = 2,
 		[PARAM_IMM8_0] = 1,
@@ -239,7 +241,8 @@ struct inst armthumb_validate(enum inst_opcode op,
 
 		/* match every parameter in the alternative */
 		for (size_t i = 0; i < MAX_PARAM_COUNT + 1; i++) {
-			if (cur_param == PARAME && args[i].ty == ARG_TK_END)
+			if ((cur_param == PARAME && args[i].ty == ARG_TK_END) ||
+			    (cur_param == PARAM_NOPARAM && i == 0))
 				return res;
 
 			if (!validate_arg(&args[i],
