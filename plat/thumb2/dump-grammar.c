@@ -1,10 +1,10 @@
-#include "detail/opcodes.h"
+#include "detail.h"
 
 #include <stddef.h>
 #include <stdio.h>
 
 
-void armthumb_dump_grammar(void)
+void thumb2_dump_grammar(void)
 {
 	for (size_t inst = 0;
 	     inst < INST_COUNT;

@@ -1,5 +1,5 @@
 MODE ?= release
-PLAT ?= armthumb
+PLAT ?= thumb2
 OS ?= linux
 
 
@@ -20,7 +20,7 @@ CFLAGS_COMMON = -std=c11 -Wall -Wextra -pedantic -fPIC -DLIBFUN_ASSERTIONS
 CFLAGS_release = -O3 -flto
 CFLAGS_debug = -O0 -g3
 CFLAGS_test = -O0 -g3 --coverage
-CFLAGS_PLAT_armthumb = -mthumb -DARMTHUMB
+CFLAGS_PLAT_thumb2 = -mthumb
 
 CFLAGS2 = $(CFLAGS_$(MODE))
 ifeq ($(CFLAGS2),)
@@ -35,12 +35,14 @@ ifeq ($(wildcard $(OSAL_DIR)/$(OS).c),)
 $(error "Unknown OS $(OS)")
 endif
 
-CFLAGS := $(CFLAGS) $(CFLAGS_COMMON) $(CFLAGS2) $(CFLAGS_PLAT_$(PLAT))
+CFLAGS := $(CFLAGS) $(CFLAGS_COMMON) $(CFLAGS2) $(CFLAGS_PLAT_$(PLAT)) \
+	  -DPLAT_$(PLAT) -DOS_$(OS)
 
 
 SRCS = $(wildcard $(SRC_DIR)/*.c)
 PLAT_SRCS = $(wildcard $(PLAT_DIR)/*.c)
-TEST_SRCS = $(wildcard $(TEST_DIR)/*.c)
+TEST_SRCS = $(filter-out $(TEST_DIR)/plat-%.c $(TEST_DIR)/os-%.c,$(wildcard $(TEST_DIR)/*.c)) \
+		    $(wildcard $(TEST_DIR)/plat-$(PLAT)*.c) $(wildcard $(TEST_DIR)/os-$(OS)*.c)
 OSAL_SRCS = $(wildcard $(OSAL_DIR)/$(OS)*.c)
 
 OBJS = $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SRCS))
@@ -49,7 +51,7 @@ OSAL_OBJS = $(patsubst $(OSAL_DIR)/%.c,$(OBJ_DIR)/%.$(OS).o,$(OSAL_SRCS))
 TEST_OBJS = $(patsubst $(TEST_DIR)/%.c,$(OBJ_DIR)/%.test.o,$(TEST_SRCS))
 
 
-TARGET = $(TARGET_DIR)/jit-parser.a
+TARGET = $(TARGET_DIR)/libmas.a
 TEST_TARGETS = $(patsubst $(TEST_DIR)/%.c,$(TARGET_DIR)/%.test,$(TEST_SRCS))
 
 default: all

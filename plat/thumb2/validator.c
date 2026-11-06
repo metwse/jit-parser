@@ -1,6 +1,6 @@
-#include "detail/opcodes.h"
+#include "detail.h"
 
-#include "../../include/common.h"
+#include "../../src/common.h"
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -226,8 +226,8 @@ static bool validate_arg(const struct inst_arg_tk *arg_in,  /* argument to parse
 	return true;
 }
 
-struct inst armthumb_validate(enum inst_opcode op,
-			      const struct inst_arg_tk *args)
+struct inst thumb2_validate(enum inst_opcode op,
+			    const struct inst_arg_tk *args)
 {
 	const char *errors[MAX_ALTERNATIVE_COUNT] = { 0 };
 	size_t max_match_i = 0;

@@ -1,22 +1,22 @@
-#ifdef ARMTHUMB
+#ifdef PLAT_thumb2
 
-#include "../include/common.h"
+#include "../src/common.h"
 
-#include "../plat/armthumb/as.h"
-#include "../plat/armthumb/detail/opcodes.h"
+#include "../include/mas.h"
+#include "../plat/thumb2/detail.h"
 
 
 static void test_lex(const char *inst,
 		     enum inst_opcode op,
 		     struct inst_arg_tk *it)
 {
-	enum inst_opcode parse_op = armthumb_consume_mnemonic(&inst);
+	enum inst_opcode parse_op = thumb2_consume_mnemonic(&inst);
 	struct inst_arg_tk pit[MAX_PARAM_COUNT + 1];
 
 	assert2(parse_op == op, "opcode mismatch");
 
 	for (size_t i = 0; i < MAX_PARAM_COUNT + 1; i++) {
-		pit[i] = armthumb_consume_arg_tk(&inst, i == 0);
+		pit[i] = thumb2_consume_arg_tk(&inst, i == 0);
 
 		assert2(pit[i].ty == it[i].ty,
 			"parsed token type do not match with testsuite");
@@ -59,7 +59,7 @@ static void test_lex(const char *inst,
 
 int main(void)
 {
-	armthumb_static_xinit();
+	mas_xinit();
 
 	test_lex("adds r1, r3",
 		 OP_ADDS,
@@ -117,7 +117,7 @@ int main(void)
 			 { .ty = ARG_TK_END, },
 		 });
 
-	armthumb_static_destroy();
+	mas_destroy();
 }
 
 #endif

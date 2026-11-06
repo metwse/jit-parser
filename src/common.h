@@ -39,13 +39,11 @@
 
 /* warn unused result */
 #if defined(__GNUC__) || defined(__clang__)
-#define _wur __attribute__((warn_unused_result))
 #define _unused __attribute__((unused))
 #define _unreachable do { \
 		__builtin_unreachable(); fatal("unreachable"); \
 	} while(0)
 #else
-#define _wur
 #define _unused
 #define _unreachable fatal("code reached unreachable branch")
 #endif

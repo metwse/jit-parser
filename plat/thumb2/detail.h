@@ -1,13 +1,15 @@
 /* OP encoding. For internal use only. */
 
-#ifndef ARMTHUMB_OPCODES_H
-#define ARMTHUMB_OPCODES_H
+#ifndef THUMB2_OPCODES_H
+#define THUMB2_OPCODES_H
+
+#include "../../include/detail.h"
 
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
-struct armthumb_as;  /* defined in ../as.h */
+struct mas_thumb2_as;  /* defined in ../as.h */
 
 
 #define MAX_PARAM_COUNT 4
@@ -328,25 +330,25 @@ inst_params[INST_COUNT][MAX_ALTERNATIVE_COUNT + 1][MAX_PARAM_COUNT + 1] = {
 };
 
 
-/* Prints assembler grammar. */
-void armthumb_dump_grammar(void);
+/* Prints assembler grammar, for development debug. */
+_masi void thumb2_dump_grammar(void);
 
 /* Extract opcode from the string, consuming its mnemonic. Returns -1 if
  * the mnemonic is not valid.*/
-enum inst_opcode armthumb_consume_mnemonic(const char **inst);
+_masi enum inst_opcode thumb2_consume_mnemonic(const char **inst);
 
 /* Extract one argument from instruction string.
  * Checks condition suffix if first==true. */
-struct inst_arg_tk armthumb_consume_arg_tk(const char **inst, bool first);
+_masi struct inst_arg_tk thumb2_consume_arg_tk(const char **inst, bool first);
 
 /* Extract one register argument from instruction string. */
-uint32_t armthumb_consume_arg_reg_tk(const char **inst);
+_masi uint32_t thumb2_consume_arg_reg_tk(const char **inst);
 
 /* Parse and validate the token list. */
-struct inst armthumb_validate(enum inst_opcode, const struct inst_arg_tk *);
+_masi struct inst thumb2_validate(enum inst_opcode, const struct inst_arg_tk *);
 
 /* Emit instruction. */
-void armthumb_emit(struct armthumb_as *, struct inst);
+_masi void thumb2_emit(struct mas_thumb2_as *, struct inst);
 
 
 #endif

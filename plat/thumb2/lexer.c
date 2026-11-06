@@ -1,6 +1,7 @@
-#include "detail/opcodes.h"
+#include "detail.h"
+#include "init.h"
 
-#include "../../include/common.h"
+#include "../../src/common.h"
 
 #include <ctype.h>
 #include <stdint.h>
@@ -14,7 +15,7 @@
 static struct fhmap_mnemonic_name mnemonic_name_map;
 
 
-void armthumb_static_xinit(void)
+void thumb2_static_xinit(void)
 {
 	fhmap_mnemonic_name_xinit(&mnemonic_name_map);
 
@@ -25,12 +26,12 @@ void armthumb_static_xinit(void)
 					    &i);
 }
 
-void armthumb_static_destroy(void)
+void thumb2_static_destroy(void)
 {
 	fhmap_mnemonic_name_destroy(&mnemonic_name_map);
 }
 
-enum inst_opcode armthumb_consume_mnemonic(const char **inst)
+enum inst_opcode thumb2_consume_mnemonic(const char **inst)
 {
 	size_t opcode_len = 0;
 	for (; isalnum((*inst)[opcode_len]); opcode_len++)
@@ -60,7 +61,7 @@ enum inst_opcode armthumb_consume_mnemonic(const char **inst)
 	return -1;
 }
 
-uint32_t armthumb_consume_arg_reg_tk(const char **inst)
+uint32_t thumb2_consume_arg_reg_tk(const char **inst)
 {
 	switch ((*inst)[0]) {
 	case 'r': {
@@ -97,7 +98,7 @@ uint32_t armthumb_consume_arg_reg_tk(const char **inst)
 	_unreachable; return 0;
 }
 
-struct inst_arg_tk armthumb_consume_arg_tk(const char **inst, bool first)
+struct inst_arg_tk thumb2_consume_arg_tk(const char **inst, bool first)
 {
 	const char *start = *inst;
 
@@ -134,7 +135,7 @@ struct inst_arg_tk armthumb_consume_arg_tk(const char **inst, bool first)
 	case 's':
 	case 'l':
 	case 'p': {  /* collect reg */
-		uint32_t reg = armthumb_consume_arg_reg_tk(inst);
+		uint32_t reg = thumb2_consume_arg_reg_tk(inst);
 
 		if (reg < 16) {
 			return (struct inst_arg_tk) {
@@ -154,7 +155,7 @@ struct inst_arg_tk armthumb_consume_arg_tk(const char **inst, bool first)
 			(*inst)++;
 
 		while ((*inst)[0] != '}') {
-			uint32_t reg = armthumb_consume_arg_reg_tk(inst);
+			uint32_t reg = thumb2_consume_arg_reg_tk(inst);
 
 			while (isspace((*inst)[0]) || (*inst)[0] == ',')
 				(*inst)++;

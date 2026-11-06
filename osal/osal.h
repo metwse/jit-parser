@@ -3,7 +3,8 @@
 #ifndef OSAL_H
 #define OSAL_H
 
-#include "../include/common.h"
+#include "../include/detail.h"
+#include "../src/common.h"
 
 #include <stddef.h>
 
@@ -29,14 +30,14 @@ struct execmem {
 
 /* Allocates at least size bytes page-aligned execmem. Returned memory is not
  * executable yet. Returns non-zero in case of a failure. */
-int execmem_alloc(struct execmem *out, size_t size) _wur;
+int execmem_alloc(struct execmem *out, size_t size) _mas_wur;
 
 /* Free the executable memory. */
 void execmem_free(struct execmem *e);
 
 /* Reallocates the executable memory with at least `size` bytes. Returns false
  * in case of a failure. */
-int execmem_realloc(struct execmem *e, size_t size) _wur;
+int execmem_realloc(struct execmem *e, size_t size) _mas_wur;
 
 /* Set RW/E mode of execmem. */
 void execmem_set_mode(struct execmem *e, enum execmem_mode mode);

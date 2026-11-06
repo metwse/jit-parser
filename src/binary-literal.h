@@ -1,5 +1,7 @@
-#ifndef ARMTHUMB_BINARY_H
-#define ARMTHUMB_BINARY_H
+/* 32-bit base2 literals */
+
+#ifndef BINARY_LITERAL_H
+#define BINARY_LITERAL_H
 
 #include <stdint.h>
 
@@ -24,5 +26,6 @@
 	     + (((x) & 0xF000000000000000llu) ? 32768 : 0) \
 
 #define b(d) ((uint8_t) __b(__hex(d)))
+
 
 #endif

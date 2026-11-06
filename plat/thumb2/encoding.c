@@ -1,8 +1,8 @@
 #include "as.h"
-#include "detail/opcodes.h"
-#include "detail/binary.h"
+#include "detail.h"
 
 #include "../../osal/osal.h"
+#include "../../src/binary-literal.h"
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -23,7 +23,7 @@
 	} while (0)
 
 
-void armthumb_emit(struct armthumb_as *as, struct inst inst)
+void thumb2_emit(struct mas_thumb2_as *as, struct inst inst)
 {
 	uint32_t bytes = 0;
 	bool is_32_bit = false;
@@ -415,8 +415,8 @@ void armthumb_emit(struct armthumb_as *as, struct inst inst)
 			emit2((args[0].reg & 0x8) ? 1 : 0, 1);
 			emit3(b(01000110));
 			break;
-		break;
 		}
+		break;
 
 	case OP_MOVS:
 		switch (alt_idx) {

@@ -1,20 +1,14 @@
-jit-parser
+libmas
 
-    A recursive descent parser with JIT compiler.
-
-
-rdesc?
-
-    I do experiments on this repository and they are not for production. I
-wanted to add JIT to rdesc VM, but to clarify the algorithm I created this
-*testing* project.
+    Collection of minimal assemblers.
 
 
 Building
 
-    Currently, only ARM platform back end is implemented. You can directly
-build this project using `make -j` if you are on ARM. To cross-compile from
-another CPU architecture, you can install GNU ARM cross-compiler, and execute
+    Currently, only ARM Thum-2 platform back end is implemented. You can
+directly build this project using `make -j` if you are on an ARM computer. To
+cross-compile from another CPU architecture, you can install GNU ARM
+cross-compiler:
 
                 # vvv your operating system's ARM cross-compiler
     export CC=arm-linux-gnueabi-gcc
