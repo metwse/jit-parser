@@ -292,8 +292,7 @@ inst_params[INST_COUNT][MAX_ALTERNATIVE_COUNT + 1][MAX_PARAM_COUNT + 1] = {
 	[OP_SEV] = { 	{ PARAM_NOPARAM } },
 
 			/* store */
-	[OP_STM] = {	{ PARAM_LOW_REG, PARAM_LOW_REG_LS },
-			{ PARAM_LOW_REG, PARAM_EXCL, PARAM_LOW_REG_LS }, },
+	[OP_STM] = {	{ PARAM_LOW_REG, PARAM_EXCL, PARAM_LOW_REG_LS } },
 			/* immediate */
 	[OP_STR] = {	{ PARAM_LOW_REG, PARAM_LOW_REG },
 			{ PARAM_LOW_REG, PARAM_BRACE, PARAM_LOW_REG, PARAM_IMM5 },
@@ -324,7 +323,8 @@ inst_params[INST_COUNT][MAX_ALTERNATIVE_COUNT + 1][MAX_PARAM_COUNT + 1] = {
 			/* register */
 	[OP_TST] = {	{ PARAM_LOW_REG, PARAM_LOW_REG } },
 
-	[OP_UDF] = {	{ PARAM_IMM8 } },
+	[OP_UDF] = {	{ PARAM_IMM8 },
+			{ PARAM_NOPARAM } },
 };
 
 

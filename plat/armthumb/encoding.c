@@ -534,6 +534,9 @@ void armthumb_emit(struct armthumb_as *as, struct inst inst)
 	case OP_STM:
 		switch (alt_idx) {
 		case 0:
+			emit2(args[2].reg_ls.reg_ls, 8);
+			emit2(args[0].reg, 3);
+			emit3(b(11000));
 			break;
 		}
 		break;
@@ -541,6 +544,32 @@ void armthumb_emit(struct armthumb_as *as, struct inst inst)
 	case OP_STR:
 		switch (alt_idx) {
 		case 0:
+			emit2(args[0].reg, 3);
+			emit2(args[1].reg, 3);
+			emit2(0, 5);
+			emit3(b(01100));
+			break;
+		case 1:
+			emit2(args[0].reg, 3);
+			emit2(args[2].reg, 3);
+			emit2(args[3].imm >> 2, 5);
+			emit3(b(01100));
+			break;
+		case 2:
+			emit2(0, 8);
+			emit2(args[0].reg, 3);
+			emit3(b(10010));
+			break;
+		case 3:
+			emit2(args[3].imm >> 2, 8);
+			emit2(args[0].reg, 3);
+			emit3(b(10010));
+			break;
+		case 4:
+			emit2(args[0].reg, 3);
+			emit2(args[2].reg, 3);
+			emit2(args[3].reg, 3);
+			emit3(b(0101000));
 			break;
 		}
 		break;
@@ -548,6 +577,22 @@ void armthumb_emit(struct armthumb_as *as, struct inst inst)
 	case OP_STRB:
 		switch (alt_idx) {
 		case 0:
+			emit2(args[0].reg, 3);
+			emit2(args[1].reg, 3);
+			emit2(0, 5);
+			emit3(b(01110));
+			break;
+		case 1:
+			emit2(args[0].reg, 3);
+			emit2(args[2].reg, 3);
+			emit2(args[3].imm, 5);
+			emit3(b(01110));
+			break;
+		case 2:
+			emit2(args[0].reg, 3);
+			emit2(args[2].reg, 3);
+			emit2(args[3].reg, 3);
+			emit3(b(0101010));
 			break;
 		}
 		break;
@@ -555,6 +600,22 @@ void armthumb_emit(struct armthumb_as *as, struct inst inst)
 	case OP_STRH:
 		switch (alt_idx) {
 		case 0:
+			emit2(args[0].reg, 3);
+			emit2(args[1].reg, 3);
+			emit2(0, 5);
+			emit3(b(10000));
+			break;
+		case 1:
+			emit2(args[0].reg, 3);
+			emit2(args[2].reg, 3);
+			emit2(args[3].imm >> 1, 5);
+			emit3(b(10000));
+			break;
+		case 2:
+			emit2(args[0].reg, 3);
+			emit2(args[2].reg, 3);
+			emit2(args[3].reg, 3);
+			emit3(b(0101001));
 			break;
 		}
 		break;
@@ -562,6 +623,21 @@ void armthumb_emit(struct armthumb_as *as, struct inst inst)
 	case OP_SUBS:
 		switch (alt_idx) {
 		case 0:
+			emit2(args[0].reg, 3);
+			emit2(args[1].reg, 3);
+			emit2(args[2].imm, 3);
+			emit3(b(0001111));
+			break;
+		case 1:
+			emit2(args[1].imm, 8);
+			emit2(args[0].reg, 3);
+			emit3(b(00111));
+			break;
+		case 2:
+			emit2(args[0].reg, 3);
+			emit2(args[1].reg, 3);
+			emit2(args[2].reg, 3);
+			emit3(b(0001101));
 			break;
 		}
 		break;
@@ -569,6 +645,8 @@ void armthumb_emit(struct armthumb_as *as, struct inst inst)
 	case OP_SUB:
 		switch (alt_idx) {
 		case 0:
+			emit2(args[2].imm >> 2, 7);
+			emit3(b(101100001));
 			break;
 		}
 		break;
@@ -576,6 +654,9 @@ void armthumb_emit(struct armthumb_as *as, struct inst inst)
 	case OP_TST:
 		switch (alt_idx) {
 		case 0:
+			emit2(args[0].reg, 3);
+			emit2(args[1].reg, 3);
+			emit3(b(0100001000));
 			break;
 		}
 		break;
@@ -583,8 +664,13 @@ void armthumb_emit(struct armthumb_as *as, struct inst inst)
 	case OP_UDF:
 		switch (alt_idx) {
 		case 0:
+			emit2(args[0].imm, 8);
+			break;
+		case 1:
+			emit2(0, 8);
 			break;
 		}
+		emit3(b(11011110));
 		break;
 	}
 

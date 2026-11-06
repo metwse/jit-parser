@@ -103,6 +103,32 @@ int main(void)
 	armthumb_as_xfeed(&as, "sev ");
 	armthumb_as_xfeed(&as, "sev");
 
+	armthumb_as_xfeed(&as, "stm r1!, { r4 }");
+	armthumb_as_xfeed(&as, "stm r1!, { r1, r2, r4 }");
+	armthumb_as_xfeed(&as, "stm r3!, { r3, r5, r6 }");
+
+	armthumb_as_xfeed(&as, "str r1, r2");
+	armthumb_as_xfeed(&as, "str r1, [r2, #8]");
+	armthumb_as_xfeed(&as, "str r2, sp");
+	armthumb_as_xfeed(&as, "str r2, [sp, #8]");
+	armthumb_as_xfeed(&as, "str r2, [r3, r4]");
+
+	armthumb_as_xfeed(&as, "strb r3, r4");
+	armthumb_as_xfeed(&as, "strb r3, [r4, #7]");
+	armthumb_as_xfeed(&as, "strb r3, [r4, r3]");
+
+	armthumb_as_xfeed(&as, "strh r3, r4");
+	armthumb_as_xfeed(&as, "strh r3, [r4, #14]");
+	armthumb_as_xfeed(&as, "strh r3, [r4, r3]");
+
+	armthumb_as_xfeed(&as, "subs r3, r4, #7");
+	armthumb_as_xfeed(&as, "subs r3, #255");
+	armthumb_as_xfeed(&as, "subs r3, r4, r7");
+	armthumb_as_xfeed(&as, "sub sp, sp, #128");
+
+	armthumb_as_xfeed(&as, "udf #123");
+	armthumb_as_xfeed(&as, "udf");
+
 	struct execmem e = armthumb_as_finalize(&as);
 	e.execmem();
 	execmem_free(&e);
