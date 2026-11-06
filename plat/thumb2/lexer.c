@@ -21,8 +21,8 @@ void thumb2_static_xinit(void)
 
 	for (size_t i = 0; i < INST_COUNT; i++)
 		fhmap_mnemonic_name_xinsert(&mnemonic_name_map,
-					    mnemonics[i],
-					    strlen(mnemonics[i]),
+					    thumb2_mnemonics[i],
+					    strlen(thumb2_mnemonics[i]),
 					    &i);
 }
 
@@ -109,8 +109,8 @@ struct inst_arg_tk thumb2_consume_arg_tk(const char **inst, bool first)
 	if (isalpha(start[0]) && first) {
 		if (strlen(start) >= 2 && isalpha(start[1]))
 			for (size_t i = 0; i < COND_AL + 1; i++)
-				if (start[0] == mnemonic_cond_suffix[i][0] &&
-				    start[1] == mnemonic_cond_suffix[i][1]) {
+				if (start[0] == thumb2_mnemonic_cond_suffix[i][0] &&
+				    start[1] == thumb2_mnemonic_cond_suffix[i][1]) {
 					*inst += 2;
 					return (struct inst_arg_tk) {
 						.ty = ARG_TK_COND,

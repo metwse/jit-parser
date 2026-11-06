@@ -7,7 +7,7 @@
 #include <stdio.h>
 
 
-#define cur_param inst_params[res.opcode][res.alt_idx][i]
+#define cur_param thumb2_inst_params[res.opcode][res.alt_idx][i]
 
 
 static bool validate_reg(const struct inst_arg_tk *arg_in,
@@ -236,7 +236,7 @@ struct inst thumb2_validate(enum inst_opcode op,
 
 	/* iterate through all of the alternative encodings */
 	for (; res.alt_idx < MAX_ALTERNATIVE_COUNT; res.alt_idx++) {
-		if (inst_params[res.opcode][res.alt_idx][0] == PARAME)
+		if (thumb2_inst_params[res.opcode][res.alt_idx][0] == PARAME)
 			break;
 
 		/* match every parameter in the alternative */

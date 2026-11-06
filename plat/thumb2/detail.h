@@ -14,8 +14,14 @@ struct mas_thumb2_as;  /* defined in ../as.h */
 
 #define MAX_PARAM_COUNT 4
 #define MAX_ALTERNATIVE_COUNT 9
-#define INST_COUNT (OP_UDF + 1)
 
+/* (Number of opcodes - ORDER OP) */
+#define INST_COUNT (OP_UDF + 1)
+/* (Number of condition suffixes - ORDER COND) */
+#define COND_SUFFIX_COUNT (COND_AL + 1)
+
+/* (Number of parameter kinds and their reg, reg_ls, imm ranges - ORDER PARAM) */
+#define PARAM_KIND_COUNT (PARAM_NOPARAM + 1)
 #define is_reg(param) \
 	((param) >= PARAM_LOW_REG && (param) <= PARAM_PC)
 #define is_reg_ls(param) \
@@ -24,7 +30,7 @@ struct mas_thumb2_as;  /* defined in ../as.h */
 	((param) >= PARAM_IMM0 && (param) <= PARAM_IMM24_0_LABEL)
 
 
-enum inst_opcode {
+enum inst_opcode {  // GREP "ORDER OP" if you change this enum
 	OP_ADCS, OP_ADDS, OP_ADD, OP_ANDS, OP_ASRS, OP_B,
 	OP_BICS, OP_BKPT, OP_BL, OP_BLX, OP_BX, OP_CMN, OP_CMP,
 	OP_EORS, OP_LDM, OP_LDR, OP_LDRB, OP_LDRH, OP_LDRSB, OP_LDRSH,
@@ -34,13 +40,13 @@ enum inst_opcode {
 };
 
 /* Conditional execution flags. */
-enum inst_cond {
+enum inst_cond {  // GREP "ORDER COND" if you change this enum
 	COND_EQ, COND_NE, COND_CS, COND_CC, COND_MI, COND_PL, COND_VS, COND_VC,
 	COND_HI, COND_LS, COND_GE, COND_LT, COND_GT, COND_LE, COND_AL,
 };
 
 /* Instruction parameters. */
-enum inst_param {
+enum inst_param {  // GREP "ORDER PARAM" if you change this enum
 	PARAME = 0,  /* end of argument list */
 
 	PARAM_LOW_REG,  /* r0-r7 */
@@ -128,206 +134,15 @@ struct inst_arg_tk {
 	} seminfo;
 };
 
-
-static const char *const mnemonics[INST_COUNT] = {
-	"adcs", "adds", "add", "ands", "asrs", "b",
-	"bics", "bkpt", "bl", "blx", "bx", "cmn", "cmp",
-	"eors", "ldm", "ldr", "ldrb", "ldrh", "ldrsb", "ldrsh",
-	"lsls", "lsrs", "mov", "movs", "muls", "mvns", "negs", "nop",
-	"orrs", "pop", "push", "rors", "rsbs", "sbcs", "sev", "stm",
-	"str", "strb", "strh", "subs", "sub", "tst", "udf"
-};
-
-static const char *const mnemonic_cond_suffix[] = {
-	"eq", "ne", "cs", "cc", "mi", "pl", "vs", "vc",
-	"hi", "ls", "ge", "lt", "gt", "le", "al",
-};
+_masi const char *const thumb2_mnemonics[INST_COUNT];
+_masi const char *const thumb2_mnemonic_cond_suffix[COND_SUFFIX_COUNT];
 
 /* Human-readable parameter names (for debug/grammar dump). */
-static const char *const param_names[] = {
-	"",
+_masi const char *const thumb2_param_names[PARAM_KIND_COUNT];
 
-	"r0-r7", "r8-r14", "r0-r15", "r0-r13,r15", "r0-r14", "sp", "pc",
-
-	"{ r0-r7 }", "{ r0-r7, pc }", "{ r0-r7, lr }",
-
-	"#imm3",
-	"#imm5", "#imm5_00",
-	"#imm7_00",
-	"#imm8", "#imm8_0", "#imm8_0_label", "#imm8_00", "#imm8_00_label",
-	"#imm11_0_label",
-	"#imm24_0_label",
-
-	"!",
-	"[",
-	"<cond>",
-	""
-};
-
-
-/* Instructions are represented as:
- * <mnemonic><mnemonic_cond_suffix> <parameters...>
- *
- * An instruction can have conditional execution mode IF its first parameter
- * is PARAM_COND. */
-
-static const enum inst_param
-inst_params[INST_COUNT][MAX_ALTERNATIVE_COUNT + 1][MAX_PARAM_COUNT + 1] = {
-			/* register */
-	[OP_ADCS] = {	{ PARAM_LOW_REG, PARAM_LOW_REG } },
-
-			/* immediate */
-	[OP_ADDS] = {	{ PARAM_LOW_REG, PARAM_LOW_REG, PARAM_IMM3 } ,
-			{ PARAM_LOW_REG, PARAM_IMM8 },
-			/* register */
-			{ PARAM_LOW_REG, PARAM_LOW_REG, PARAM_LOW_REG } },
-
-	[OP_ADD] = {	{ PARAM_NOT_SP_REG, PARAM_ANY_REG },
-			/* SP plus immediate */
-			{ PARAM_LOW_REG, PARAM_SP, PARAM_IMM8_00 },
-			{ PARAM_SP, PARAM_IMM7_00 },
-			/* SP plus register */
-			{ PARAM_ANY_REG, PARAM_SP },
-			{ PARAM_SP, PARAM_ANY_REG },
-			{ PARAM_LOW_REG, PARAM_PC, PARAM_IMM8_00 } },
-
-			/* register */
-	[OP_ANDS] = {	{ PARAM_LOW_REG, PARAM_LOW_REG } },
-
-			/* immediate */
-	[OP_ASRS] = {	{ PARAM_LOW_REG, PARAM_LOW_REG, PARAM_IMM5 },
-			/* register */
-			{ PARAM_LOW_REG, PARAM_LOW_REG } },
-
-	[OP_B] = {	{ PARAM_COND, PARAM_IMM8_0_LABEL },			/* TODO: make this label signed (-256-254) */
-			{ PARAM_IMM11_0_LABEL } },				/* TODO: make this label signed (-2048-2046) */
-
-			/* register */
-	[OP_BICS] = {	{ PARAM_LOW_REG, PARAM_LOW_REG } },
-
-	[OP_BKPT] = {	{ PARAM_IMM8 } },
-
-	[OP_BL] = {	{ PARAM_IMM24_0_LABEL } },				/* TODO: make this label signed (-16777216-16777214) */
-
-			/* register */
-	[OP_BLX] = {	{ PARAM_NOT_PC_REG } },
-
-	[OP_BX] = {	{ PARAM_NOT_PC_REG } },
-
-			/* register */
-	[OP_CMN] = {	{ PARAM_LOW_REG, PARAM_LOW_REG } },
-			/* immediate */
-	[OP_CMP] = {	{ PARAM_LOW_REG, PARAM_IMM8 },
-			/* register */
-			{ PARAM_LOW_REG, PARAM_LOW_REG },
-			{ PARAM_ANY_REG, PARAM_ANY_REG } },
-
-			/* register */
-	[OP_EORS] = {	{ PARAM_LOW_REG, PARAM_LOW_REG } },
-
-			/* load */
-	[OP_LDM] = {	{ PARAM_LOW_REG, PARAM_LOW_REG_LS },
-			{ PARAM_LOW_REG, PARAM_EXCL, PARAM_LOW_REG_LS }, },
-			/* immediate */
-	[OP_LDR] = {	{ PARAM_LOW_REG, PARAM_LOW_REG },
-			{ PARAM_LOW_REG, PARAM_BRACE, PARAM_LOW_REG, PARAM_IMM5_00 },
-			{ PARAM_LOW_REG, PARAM_SP },
-			{ PARAM_LOW_REG, PARAM_BRACE, PARAM_SP, PARAM_IMM8_00 },
-			/* literal */
-			{ PARAM_LOW_REG, PARAM_IMM8_00_LABEL },
-			{ PARAM_LOW_REG, PARAM_BRACE, PARAM_PC, PARAM_IMM8_00 },
-			/* register */
-			{ PARAM_LOW_REG, PARAM_BRACE, PARAM_LOW_REG, PARAM_LOW_REG } },
-
-			/* immediate */
-	[OP_LDRB] = {	{ PARAM_LOW_REG, PARAM_LOW_REG },
-			{ PARAM_LOW_REG, PARAM_BRACE, PARAM_LOW_REG, PARAM_IMM5 },
-			/* register */
-			{ PARAM_LOW_REG, PARAM_BRACE, PARAM_LOW_REG, PARAM_LOW_REG } },
-			/* immediate */
-	[OP_LDRH] = {	{ PARAM_LOW_REG, PARAM_LOW_REG },
-			{ PARAM_LOW_REG, PARAM_BRACE, PARAM_LOW_REG, PARAM_IMM5 },
-			/* register */
-			{ PARAM_LOW_REG, PARAM_BRACE, PARAM_LOW_REG, PARAM_LOW_REG } },
-
-	[OP_LDRSB] = {	{ PARAM_LOW_REG, PARAM_BRACE, PARAM_LOW_REG, PARAM_LOW_REG } },
-	[OP_LDRSH] = {	{ PARAM_LOW_REG, PARAM_BRACE, PARAM_LOW_REG, PARAM_LOW_REG } },
-
-			/* immediate */
-	[OP_LSLS] = {	{ PARAM_LOW_REG, PARAM_LOW_REG, PARAM_IMM5 },
-			/* register */
-			{ PARAM_LOW_REG, PARAM_LOW_REG } },
-			/* immediate */
-	[OP_LSRS] = {	{ PARAM_LOW_REG, PARAM_LOW_REG, PARAM_IMM5 },
-			/* register */
-			{ PARAM_LOW_REG, PARAM_LOW_REG } },
-
-	[OP_MOV] = {	{ PARAM_ANY_REG, PARAM_ANY_REG } },
-			/* immediate */
-	[OP_MOVS] = {	{ PARAM_LOW_REG, PARAM_IMM8 },
-			/* register */
-			{ PARAM_LOW_REG, PARAM_LOW_REG } },
-
-	[OP_MULS] = {	{ PARAM_LOW_REG, PARAM_LOW_REG } },
-
-			/* register */
-	[OP_MVNS] = {	{ PARAM_LOW_REG, PARAM_LOW_REG } },
-
-	[OP_NEGS] = {	{ PARAM_LOW_REG, PARAM_LOW_REG } },
-
-	[OP_NOP] = { 	{ PARAM_NOPARAM } },
-
-			/* register */
-	[OP_ORRS] = {	{ PARAM_LOW_REG, PARAM_LOW_REG } },
-
-	[OP_POP] = {	{ PARAM_POP_REG_LS } },
-	[OP_PUSH] = {	{ PARAM_PUSH_REG_LS } },
-
-			/* register */
-	[OP_RORS] = {	{ PARAM_LOW_REG, PARAM_LOW_REG } },
-
-			/* register */
-	[OP_RSBS] = {	{ PARAM_LOW_REG, PARAM_LOW_REG },
-			{ PARAM_LOW_REG, PARAM_LOW_REG, PARAM_IMM0 } },
-	[OP_SBCS] = {	{ PARAM_LOW_REG, PARAM_LOW_REG } },
-
-	[OP_SEV] = { 	{ PARAM_NOPARAM } },
-
-			/* store */
-	[OP_STM] = {	{ PARAM_LOW_REG, PARAM_EXCL, PARAM_LOW_REG_LS } },
-			/* immediate */
-	[OP_STR] = {	{ PARAM_LOW_REG, PARAM_LOW_REG },
-			{ PARAM_LOW_REG, PARAM_BRACE, PARAM_LOW_REG, PARAM_IMM5 },
-			{ PARAM_LOW_REG, PARAM_SP },
-			{ PARAM_LOW_REG, PARAM_BRACE, PARAM_SP, PARAM_IMM8_00 },
-			/* register */
-			{ PARAM_LOW_REG, PARAM_BRACE, PARAM_LOW_REG, PARAM_LOW_REG } },
-
-			/* immediate */
-	[OP_STRB] = {	{ PARAM_LOW_REG, PARAM_LOW_REG },
-			{ PARAM_LOW_REG, PARAM_BRACE, PARAM_LOW_REG, PARAM_IMM5 },
-			/* register */
-			{ PARAM_LOW_REG, PARAM_BRACE, PARAM_LOW_REG, PARAM_LOW_REG } },
-			/* immediate */
-	[OP_STRH] = {	{ PARAM_LOW_REG, PARAM_LOW_REG },
-			{ PARAM_LOW_REG, PARAM_BRACE, PARAM_LOW_REG, PARAM_IMM5 },
-			/* register */
-			{ PARAM_LOW_REG, PARAM_BRACE, PARAM_LOW_REG, PARAM_LOW_REG } },
-
-			/* immediate */
-	[OP_SUBS] = {	{ PARAM_LOW_REG, PARAM_LOW_REG, PARAM_IMM3 },
-			{ PARAM_LOW_REG, PARAM_IMM8 },
-			/* register */
-			{ PARAM_LOW_REG, PARAM_LOW_REG, PARAM_LOW_REG } },
-			/* SP minus immediate */
-	[OP_SUB] = {	{ PARAM_SP, PARAM_SP, PARAM_IMM7_00 } },
-
-			/* register */
-	[OP_TST] = {	{ PARAM_LOW_REG, PARAM_LOW_REG } },
-
-	[OP_UDF] = {	{ PARAM_IMM8 },
-			{ PARAM_NOPARAM } },
-};
+/* Instruction-parameter table, for assembly syntax. */
+_masi const enum inst_param
+thumb2_inst_params[INST_COUNT][MAX_ALTERNATIVE_COUNT + 1][MAX_PARAM_COUNT + 1];
 
 
 /* Prints assembler grammar, for development debug. */
