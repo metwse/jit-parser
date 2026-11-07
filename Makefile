@@ -1,6 +1,6 @@
 MODE ?= release
 CURRENT_PLAT ?= thumb2
-CURRENT_OS ?= linux
+CURRENT_OS ?= unix
 
 
 DIST_DIR = dist
@@ -32,7 +32,7 @@ $(error "Unknown OS $(CURRENT_OS)")
 endif
 
 CFLAGS := $(CFLAGS) $(CFLAGS_COMMON) $(CFLAGS2) $(CFLAGS_PLAT_$(CURRENT_PLAT)) \
-	  -DPLAT_$(CURRENT_PLAT) -DOS_$(CURRENT_OS)
+	  -DCURRENT_PLAT_$(CURRENT_PLAT) -DCURRENT_OS_$(CURRENT_OS)
 
 
 SRCS = $(wildcard $(SRC_DIR)/*.c)

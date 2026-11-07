@@ -4,20 +4,20 @@
 #define OSAL_H
 
 #include "../include/detail.h"
-#include "../src/common.h"
 
+#include <assert.h>
 #include <stddef.h>
 
 
 /* Executable memory permissions. */
-enum execmem_mode {
-	EXECMEM_RW,  /* read-write */
-	EXECMEM_E,  /* execute */
+enum mas_execmem_mode {
+	MAS_EXECMEM_W,  /* write */
+	MAS_EXECMEM_RE,  /* read-execute */
 };
 
 /* Executable memory. */
-struct execmem {
-	enum execmem_mode mode;
+struct mas_execmem {
+	enum mas_execmem_mode mode;
 
 	union {
 		void *mem;
@@ -30,28 +30,18 @@ struct execmem {
 
 /* Allocates at least size bytes page-aligned execmem. Returned memory is not
  * executable yet. Returns non-zero in case of a failure. */
-int execmem_alloc(struct execmem *out, size_t size) _mas_wur;
+int mas_execmem_alloc(struct mas_execmem *out, size_t size) _mas_wur;
 
 /* Free the executable memory. */
-void execmem_free(struct execmem *e);
+void mas_execmem_free(struct mas_execmem *e);
 
-/* Reallocates the executable memory with at least `size` bytes. Returns false
- * in case of a failure. */
-int execmem_realloc(struct execmem *e, size_t size) _mas_wur;
+/* Set W/RE mode of execmem. */
+void mas_execmem_set_mode(struct mas_execmem *e, enum mas_execmem_mode mode);
 
-/* Set RW/E mode of execmem. */
-void execmem_set_mode(struct execmem *e, enum execmem_mode mode);
-
-/* Similar to execmem_alloc, but raises an erorr if memory allocation fails. */
-static inline void execmem_xalloc(struct execmem *out, size_t size)
+/* Similar to mas_execmem_alloc, but raises an erorr if memory allocation fails. */
+static inline void mas_execmem_xalloc(struct mas_execmem *out, size_t size)
 {
-	assert2(execmem_alloc(out, size) == 0, "failed to allocate execmem");
-}
-
-/* Similar to execmem_realloc, but raises an erorr if memory allocation fails. */
-static inline void execmem_xrealloc(struct execmem *e, size_t size)
-{
-	assert2(execmem_realloc(e, size) == 0, "failed to reallocate execmem");
+	assert(mas_execmem_alloc(out, size) == 0 && "failed to allocate execmem");
 }
 
 
