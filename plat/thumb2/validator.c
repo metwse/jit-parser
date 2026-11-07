@@ -1,4 +1,5 @@
-#include "detail.h"
+#include "detail/grammar.h"
+#include "detail/opcodes.h"
 
 #include "../../src/common.h"
 

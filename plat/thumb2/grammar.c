@@ -1,4 +1,5 @@
-#include "detail.h"
+#include "detail/opcodes.h"
+#include "detail/grammar.h"
 
 #include <stddef.h>
 #include <stdio.h>

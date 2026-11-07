@@ -1,5 +1,6 @@
-#include "detail.h"
-#include "init.h"
+#include "detail/grammar.h"
+#include "detail/static-init.h"
+#include "detail/opcodes.h"
 
 #include "../../src/common.h"
 
@@ -15,7 +16,7 @@
 static struct fhmap_mnemonic_name mnemonic_name_map;
 
 
-void thumb2_static_xinit(void)
+void thumb2_lexer_static_xinit(void)
 {
 	fhmap_mnemonic_name_xinit(&mnemonic_name_map);
 
@@ -26,7 +27,7 @@ void thumb2_static_xinit(void)
 					    &i);
 }
 
-void thumb2_static_destroy(void)
+void thumb2_lexer_static_destroy(void)
 {
 	fhmap_mnemonic_name_destroy(&mnemonic_name_map);
 }

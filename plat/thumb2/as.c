@@ -1,7 +1,8 @@
 #include "as.h"
-#include "detail.h"
+#include "detail/detail.h"
+#include "detail/grammar.h"
+#include "detail/opcodes.h"
 
-#include "../../osal/osal.h"
 #include "../../src/common.h"
 
 #include <stdarg.h>
@@ -12,21 +13,18 @@
 #define inc as->i++
 
 
-void mas_thumb2_as_xinit(struct mas_thumb2_as *as)
+/* TODO: hints */
+struct mas_thumb2_as *mas_thumb2_as_xnew(enum mas_as_hint _unused hints)
 {
-	execmem_xalloc(&as->e, 1);
-	fhmap__mas_label_idx_map_xinit(&as->label_idx_map);
-	as->i = 0;
-}
+	struct mas_thumb2_as *as = xmalloc(sizeof(struct mas_thumb2_as));
 
-struct execmem mas_thumb2_as_finalize(struct mas_thumb2_as *as)
-{
-	/* TODO: finalize label offsets */
-	fhmap__mas_label_idx_map_destroy(&as->label_idx_map);
+	fstack_asm_item_xinit(&as->asm);
+	as->output_size = 0;
 
-	execmem_set_mode(&as->e, EXECMEM_E);
+	fhmap_label_idx_map_xinit(&as->label_idx_map);
+	as->up_as = NULL;
 
-	return as->e;
+	return as;
 }
 
 void mas_thumb2_as_xfeed(struct mas_thumb2_as *as, const char *inst_str, ...)
@@ -78,7 +76,45 @@ void mas_thumb2_as_xfeed(struct mas_thumb2_as *as, const char *inst_str, ...)
 
 	struct inst inst = thumb2_validate(op, arg_tks);
 
-	thumb2_emit(as, inst);
+	fstack_asm_item_xpush(&as->asm, &(const struct asm_item) {
+				     .ty = ASM_ITEM_INST,
+				     .item.inst = inst
+			     });
+	as->output_size += thumb2_inst_size(&inst);
 
 	va_end(ap);
+}
+
+void mas_thumb2_as_xappend(struct mas_thumb2_as *as,
+			   struct mas_thumb2_as *extend_with,
+			   bool isolate_scope)
+{
+	extend_with->up_as = isolate_scope ? NULL : as;
+
+	fstack_asm_item_xpush(&as->asm, &(const struct asm_item) {
+				     .ty = ASM_ITEM_AS,
+				     .item.as = extend_with
+			     });
+
+	as->output_size += extend_with->output_size;
+}
+
+size_t mas_thumb2_as_output_size(const struct mas_thumb2_as *as)
+{
+	return as->output_size;
+}
+
+void mas_thumb2_as_finalize(struct mas_thumb2_as *as, void *out)
+{
+	for (size_t i = 0; i < fstack_asm_item_len(&as->asm); i++) {
+		const struct asm_item *item = fstack_asm_item_at(&as->asm, i);
+
+		if (item->ty == ASM_ITEM_INST) {
+			thumb2_inst_emit(out, &item->item.inst);
+			out = ((char *) out) + thumb2_inst_size(&item->item.inst);
+		} else {
+			mas_thumb2_as_finalize(item->item.as, out);
+			out = ((char *) out) + item->item.as->output_size;
+		}
+	}
 }

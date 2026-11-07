@@ -1,9 +1,7 @@
-#ifdef PLAT_thumb2
-
-#include "../src/common.h"
-
 #include "../include/mas.h"
-#include "../plat/thumb2/detail.h"
+#include "../plat/thumb2/detail/grammar.h"
+#include "../plat/thumb2/detail/opcodes.h"
+#include "../src/common.h"
 
 
 static void test_lex(const char *inst,
@@ -119,5 +117,3 @@ int main(void)
 
 	mas_destroy();
 }
-
-#endif

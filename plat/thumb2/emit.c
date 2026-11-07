@@ -1,39 +1,36 @@
-#include "as.h"
-#include "detail.h"
+#include "detail/opcodes.h"
 
-#include "../../osal/osal.h"
 #include "../../src/binary-literal.h"
 
 #include <stdbool.h>
 #include <stdint.h>
 
 
-/* emit to an offset */
+/* emit bits to an offset */
 #define emit(bits, n, o) do { \
 		bytes |= ((bits) & ((1 << (n)) - 1)) << o; \
 	} while (0)
-/* emit bytes incrementing saved offset */
+/* emit bits incrementing saved offset */
 #define emit2(bits, n) do { \
 		emit(bits, n, write_offset); \
 		write_offset += n; \
 	} while (0)
-/* emit for the rest */
+/* emit for the rest of instruction */
 #define emit3(bits) do { \
 		emit2(bits, (is_32_bit ? 32 : 16) - write_offset); \
 	} while (0)
 
 
-void thumb2_emit(struct mas_thumb2_as *as, struct inst inst)
+void thumb2_inst_emit(void *out, const struct inst *inst)
 {
+	size_t alt_idx = inst->alt_idx;
+	const union inst_arg_data *args = inst->args;
+
 	uint32_t bytes = 0;
-	bool is_32_bit = false;
+	bool is_32_bit = thumb2_inst_size(inst);
 	uint32_t write_offset = 0;
 
-	size_t alt_idx = inst.alt_idx;
-	union inst_arg_data *args = inst.args;
-
-
-	switch (inst.opcode) {
+	switch (inst->opcode) {
 	case OP_ADCS:
 		switch (alt_idx) {
 		case 0:
@@ -675,17 +672,29 @@ void thumb2_emit(struct mas_thumb2_as *as, struct inst inst)
 	}
 
 
-	if (as->e.size + 4 == as->i)
-		execmem_xrealloc(&as->e, as->e.size * 2);
-
-	uint16_t *addr = &((uint16_t *) as->e.mem)[as->i];
+	uint16_t *addr = (uint16_t *) out;
 
 	if (!is_32_bit) {
 		*addr = (uint16_t) bytes;
-		as->i += 1;
 	} else {
 		*addr = (uint16_t) bytes;
 		*(addr + 1) = (uint16_t) (bytes >> 16);
-		as->i += 2;
 	}
+}
+
+size_t thumb2_inst_size(const struct inst *inst)
+{
+	size_t alt_idx = inst->alt_idx;
+
+	switch (inst->opcode) {
+	case OP_BL:
+		switch (alt_idx) {
+		case 0:
+			return 4;
+		}
+
+	default: break;
+	}
+
+	return 2;
 }
