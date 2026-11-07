@@ -131,6 +131,7 @@ int main(void)
 
 	void *out = xmalloc(mas_thumb2_as_output_size(as));
 	mas_thumb2_as_finalize(as, out);
+	free(out);
 
 	mas_destroy();
 }

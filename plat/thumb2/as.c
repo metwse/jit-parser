@@ -79,7 +79,7 @@ void mas_thumb2_as_xfeed(struct mas_thumb2_as *as, const char *inst_str, ...)
 	fstack_asm_item_xpush(&as->asm, &(const struct asm_item) {
 				     .ty = ASM_ITEM_INST,
 				     .item.inst = inst
-			     });
+			      });
 	as->output_size += thumb2_inst_size(&inst);
 
 	va_end(ap);
@@ -95,7 +95,6 @@ void mas_thumb2_as_xappend(struct mas_thumb2_as *as,
 				     .ty = ASM_ITEM_AS,
 				     .item.as = extend_with
 			     });
-
 	as->output_size += extend_with->output_size;
 }
 
@@ -104,17 +103,23 @@ size_t mas_thumb2_as_output_size(const struct mas_thumb2_as *as)
 	return as->output_size;
 }
 
-void mas_thumb2_as_finalize(struct mas_thumb2_as *as, void *out)
+void mas_thumb2_as_finalize(struct mas_thumb2_as *as, void *out_)
 {
+	char *out = out_;
+
 	for (size_t i = 0; i < fstack_asm_item_len(&as->asm); i++) {
 		const struct asm_item *item = fstack_asm_item_at(&as->asm, i);
 
 		if (item->ty == ASM_ITEM_INST) {
 			thumb2_inst_emit(out, &item->item.inst);
-			out = ((char *) out) + thumb2_inst_size(&item->item.inst);
+			out += thumb2_inst_size(&item->item.inst);
 		} else {
 			mas_thumb2_as_finalize(item->item.as, out);
-			out = ((char *) out) + item->item.as->output_size;
+			out += item->item.as->output_size;
 		}
 	}
+
+	fstack_asm_item_destroy(&as->asm);
+	fhmap_label_idx_map_destroy(&as->label_idx_map);
+	free(as);
 }

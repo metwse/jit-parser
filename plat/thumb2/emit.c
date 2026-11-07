@@ -27,7 +27,7 @@ void thumb2_inst_emit(void *out, const struct inst *inst)
 	const union inst_arg_data *args = inst->args;
 
 	uint32_t bytes = 0;
-	bool is_32_bit = thumb2_inst_size(inst);
+	bool is_32_bit = thumb2_inst_size(inst) == 4;
 	uint32_t write_offset = 0;
 
 	switch (inst->opcode) {
@@ -165,7 +165,6 @@ void thumb2_inst_emit(void *out, const struct inst *inst)
 			int j1 = s ^ ((args[0].imm & (1 << 23)) ? 1 : 0);
 			int j2 = s ^ ((args[0].imm & (1 << 22)) ? 1 : 0);
 
-			is_32_bit = true;
 			emit2(args[0].imm >> 12, 10);
 			emit2(s, 1);
 			emit2(b(11110), 5);
@@ -670,7 +669,6 @@ void thumb2_inst_emit(void *out, const struct inst *inst)
 		emit3(b(11011110));
 		break;
 	}
-
 
 	uint16_t *addr = (uint16_t *) out;
 

@@ -20,7 +20,7 @@ void thumb2_lexer_static_xinit(void)
 {
 	fhmap_mnemonic_name_xinit(&mnemonic_name_map);
 
-	for (size_t i = 0; i < INST_COUNT; i++)
+	for (enum inst_opcode i = 0; i < INST_COUNT; i++)
 		fhmap_mnemonic_name_xinsert(&mnemonic_name_map,
 					    thumb2_mnemonics[i],
 					    strlen(thumb2_mnemonics[i]),

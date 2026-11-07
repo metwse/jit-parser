@@ -1,6 +1,6 @@
 MODE ?= release
-PLAT ?= thumb2
-OS ?= linux
+CURRENT_PLAT ?= thumb2
+CURRENT_OS ?= linux
 
 
 DIST_DIR = dist
@@ -9,7 +9,7 @@ OBJ_DIR = $(TARGET_DIR)/obj
 
 SRC_DIR = src
 TEST_DIR = tests
-PLAT_DIR = plat/$(PLAT)
+PLAT_DIR = plat
 OSAL_DIR = osal
 VENDOR_DIR = vendor
 
@@ -27,28 +27,30 @@ ifeq ($(CFLAGS2),)
 $(error "Unknown mode $(MODE)")
 endif
 
-ifeq ($(wildcard $(PLAT_DIR)),)
-$(error "Unknown platform $(PLAT)")
+ifeq ($(wildcard $(OSAL_DIR)/$(CURRENT_OS).c),)
+$(error "Unknown OS $(CURRENT_OS)")
 endif
 
-ifeq ($(wildcard $(OSAL_DIR)/$(OS).c),)
-$(error "Unknown OS $(OS)")
-endif
-
-CFLAGS := $(CFLAGS) $(CFLAGS_COMMON) $(CFLAGS2) $(CFLAGS_PLAT_$(PLAT)) \
-	  -DPLAT_$(PLAT) -DOS_$(OS)
+CFLAGS := $(CFLAGS) $(CFLAGS_COMMON) $(CFLAGS2) $(CFLAGS_PLAT_$(CURRENT_PLAT)) \
+	  -DPLAT_$(CURRENT_PLAT) -DOS_$(CURRENT_OS)
 
 
 SRCS = $(wildcard $(SRC_DIR)/*.c)
 PLAT_SRCS = $(wildcard $(PLAT_DIR)/*.c)
-TEST_SRCS = $(filter-out $(TEST_DIR)/plat-%.c $(TEST_DIR)/os-%.c,$(wildcard $(TEST_DIR)/*.c)) \
-		    $(wildcard $(TEST_DIR)/plat-$(PLAT)*.c) $(wildcard $(TEST_DIR)/os-$(OS)*.c)
-OSAL_SRCS = $(wildcard $(OSAL_DIR)/$(OS)*.c)
+TEST_SRCS = $(filter-out $(TEST_DIR)/only_%.c,$(wildcard $(TEST_DIR)/*.c)) \
+	      $(wildcard $(TEST_DIR)/only_plat-$(CURRENT_PLAT)*.c) \
+	      $(wildcard $(TEST_DIR)/only_os-$(CURRENT_OS)*.c)
+OSAL_SRCS = $(wildcard $(OSAL_DIR)/$(CURRENT_OS)*.c)
 
 OBJS = $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SRCS))
-PLAT_OBJS = $(patsubst $(PLAT_DIR)/%.c,$(OBJ_DIR)/%.$(PLAT).o,$(PLAT_SRCS))
-OSAL_OBJS = $(patsubst $(OSAL_DIR)/%.c,$(OBJ_DIR)/%.$(OS).o,$(OSAL_SRCS))
 TEST_OBJS = $(patsubst $(TEST_DIR)/%.c,$(OBJ_DIR)/%.test.o,$(TEST_SRCS))
+
+PLAT_OBJS = $(foreach p, \
+		      $(notdir $(wildcard $(PLAT_DIR)/*)),\
+		      $(patsubst $(PLAT_DIR)/$p/%.c,\
+			        $(OBJ_DIR)/$p/%.o,\
+			        $(wildcard $(PLAT_DIR)/$p/*.c)))
+OSAL_OBJS = $(patsubst $(OSAL_DIR)/%.c,$(OBJ_DIR)/%.$(CURRENT_OS).o,$(OSAL_SRCS))
 
 
 TARGET = $(TARGET_DIR)/libmas.a
@@ -69,37 +71,46 @@ $(LIBFUN_DIR)/libfun.mk: | $(LIBFUN_DIR)/
 
 include $(LIBFUN_DIR)/libfun.mk
 
+
 all: $(TARGET) $(TEST_TARGETS)
 
 
+# Library & test targets.
 $(TARGET): $(OBJS) $(PLAT_OBJS) $(OSAL_OBJS) $(LIBFUN) | $(TARGET_DIR)/
 	$(AR) rcs $@ $^
-
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)/
-	$(CC) $(CFLAGS) -o $@ $< -c $(CPPFLAGS)
-
-$(OBJ_DIR)/%.$(PLAT).o: $(PLAT_DIR)/%.c | $(OBJ_DIR)/
-	$(CC) $(CFLAGS) -o $@ $< -c $(CPPFLAGS)
-
-$(OBJ_DIR)/%.$(OS).o: $(OSAL_DIR)/%.c | $(OBJ_DIR)/
-	$(CC) $(CFLAGS) -o $@ $< -c $(CPPFLAGS)
 
 $(TARGET_DIR)/%.test: $(OBJ_DIR)/%.test.o $(OBJS) $(PLAT_OBJS) $(OSAL_OBJS) \
 		$(LIBFUN) | $(TARGET_DIR)/
 	$(CC) $(CFLAGS) -o $@ $^ $(CPPFLAGS)
 
-.SECONDARY:
+
+# Object targets.
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)/
+	$(CC) $(CFLAGS) -o $@ $< -c $(CPPFLAGS)
+
+.SECONDEXPANSION:
+$(OBJ_DIR)/%.o: $(PLAT_DIR)/%.c | $$(dir $(OBJ_DIR)/%)
+	$(CC) $(CFLAGS) -o $@ $< -c $(CPPFLAGS)
+
+$(OBJ_DIR)/%.$(CURRENT_OS).o: $(OSAL_DIR)/%.c | $(OBJ_DIR)/
+	$(CC) $(CFLAGS) -o $@ $< -c $(CPPFLAGS)
+
 $(OBJ_DIR)/%.test.o: $(TEST_DIR)/%.c | $(OBJ_DIR)/
 	$(CC) $(CFLAGS) -o $@ $< -c $(CPPFLAGS)
 
 
-$(DIST_DIR)%/ $(VENDOR_DIR)%/:
+# Automatic directory targets.
+$(DIST_DIR)%/:
+	mkdir -p $@
+$(VENDOR_DIR)%/:
 	mkdir -p $@
 
 
 clean:
 	$(RM) -r $(DIST_DIR)
+clean-vendor:
+	$(RM) -r $(VENDOR_DIR)
 
-.PHONY: clean default all
+.PHONY: clean clean-vendor default all
 
-include $(wildcard $(OBJ_DIR)/*.d)
+-include $(wildcard $(OBJ_DIR)/*.d)
